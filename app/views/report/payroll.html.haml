@@ -1,0 +1,7 @@
+%h1 Payroll
+%h3 Select Pay Period End Date:
+%input.datepicker_input{:name => "end_date", :value => 1.week.ago.to_date().strftime("%m/%d/%Y") }
+%button{:onclick => "getPayroll()"}GO
+%br
+%br
+#payroll_results

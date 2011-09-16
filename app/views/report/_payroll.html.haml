@@ -1,0 +1,33 @@
+%a{:href => "/report/export_payroll?payroll_date="+@date}
+  Export
+%br
+%br
+%table
+  %thead
+    %tr
+      %td FirstName
+      %td LastName
+      %td JobTitleText
+      %td SocialSecurityNumber
+      %td PayRate
+      %td RegularHours
+      %td OTPayRate
+      %td OverTimeHours
+      %td PayableTips
+      %td NonPayableTips
+      -#%td Date
+      
+  %tbody
+  -for employee in @payroll_data
+    %tr
+      %td=employee[0]
+      %td=employee[1]
+      %td=employee[2]
+      %td=employee[3]
+      %td=sprintf( "%.02f" , employee[4] )
+      %td=sprintf( "%.02f" , employee[5] ) 
+      %td=sprintf( "%.02f" , employee[6] ) 
+      %td=sprintf( "%.02f" , employee[7] ) 
+      %td=sprintf( "%.02f" , employee[8] ) 
+      %td=sprintf( "%.02f" , employee[9] ) 
+      -#%td=employee[10]

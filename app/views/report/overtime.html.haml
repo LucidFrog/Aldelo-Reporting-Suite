@@ -1,0 +1,13 @@
+%h1 Overtime Report
+%h3 Select Work Week Beginning Day:
+%input.datepicker_input{:name => "start_date", :value => 1.week.ago.to_date().strftime("%m/%d/%Y") }
+%h3 Select Job Title:
+%select.job_title_id{:name => "jobTitle"}
+  -for job in @job_titles
+    %option{:id => job[0], :value => job[0]}=job[1]
+%br
+%br
+%button{:onclick => "getOvertime()"}GO
+%br
+%br
+#overtime_results

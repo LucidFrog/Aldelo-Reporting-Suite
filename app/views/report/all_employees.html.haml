@@ -1,0 +1,19 @@
+%h1 ALL EMPLOYEES
+%a{:href => "/report/export_all_employees"}
+  Export
+%br
+%br
+%table
+  %thead
+    %tr
+      %td FirstName
+      %td LastName      
+      %td SocialSecurityNumber
+      %td JobTitleText
+  %tbody
+  -for employee in @all_employees
+    %tr
+      %td=employee[0]
+      %td=employee[1]
+      %td=employee[3]
+      %td=employee[2]
