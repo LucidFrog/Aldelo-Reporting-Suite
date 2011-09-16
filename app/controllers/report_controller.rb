@@ -44,6 +44,7 @@ class ReportController < ActionController::Base
         AND PayPeriodEndDate = #"+params[:payroll_date]+"#;")
 
       @payroll_data = db.data
+      @payroll_data.sort!
       @date = params[:payroll_date]
       
       render :partial => "payroll"
@@ -98,6 +99,7 @@ class ReportController < ActionController::Base
         AND EmployeeTimeCards.TotalWeeklyOverTimeMinutes > 0 AND "+employee_ot_query+";")
       
       @overtime_data = db.data
+      @overtime_data.sort!
       @date = params[:overtime_date]
       @job_title_id = params[:job_title_id]
       
@@ -158,6 +160,7 @@ class ReportController < ActionController::Base
         WHERE "+employee_ot_query+";")
       
       @total_hours_data = db.data
+      @total_hours_data.sort!
       @date = params[:total_hours_date]
       @job_title_id = params[:job_title_id]
       

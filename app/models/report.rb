@@ -12,6 +12,7 @@ class Report < ActiveRecord::Base
     db.query("SELECT FirstName, LastName, JobTitleText, SocialSecurityNumber FROM EmployeeFiles, JobTitles WHERE EmployeeFiles.JobTitleID = JobTitles.JobTitleID;")
     @field_names = db.fields
     @all_employees = db.data
+    @all_employees.sort!
     
     data = CSV.generate(:force_quotes => true) do |row|
       row << ['FirstName', 'LastName', 'SSN', 'JobTitle']
@@ -39,6 +40,7 @@ class Report < ActiveRecord::Base
       AND EmployeeFiles.JobTitleID = JobTitles.JobTitleID
       AND PayPeriodEndDate = #"+date+"#;")    
     @payroll = db.data
+    @payroll.sort!
     
     data = CSV.generate(:force_quotes => true) do |row|
       row << ['FirstName', 'LastName',  'JobTitleText',  'SocialSecurityNumber',  'PayRate', 'RegularHours',  'OTPayRate', 'OverTimeHours', 'PayableTips', 'NonPayableTips']
@@ -87,7 +89,8 @@ class Report < ActiveRecord::Base
       AND EmployeeTimeCards.TotalWeeklyOverTimeMinutes > 0 AND "+employee_ot_query+";")
     
     @overtime_data = db.data
-      
+    @overtime_data.sort!
+    
     data = CSV.generate(:force_quotes => true) do |row|
       row << ['FirstName', 'LastName',  'JobTitleText',  'DateOfOvertime',  'OTHours']
       @overtime_data.each do |employee|
@@ -131,7 +134,8 @@ class Report < ActiveRecord::Base
       
     
     @overtime_data = db.data
-      
+    @overtime_data.sort!
+    
     data = CSV.generate(:force_quotes => true) do |row|
       row << ['FirstName', 'LastName',  'JobTitleText',  'DateOfOvertime',  'OTHours']
       @overtime_data.each do |employee|
