@@ -1,0 +1,9 @@
+%h1 Liquor Sales Report
+%h3 Select Beginning Day:
+%input.datepicker_input{:name => "start_date", :value => 1.week.ago.to_date().strftime("%m/%d/%Y") }
+%br
+%br
+%button{:onclick => "getLiquorSales()"}GO
+%br
+%br
+#liquor_sale_results

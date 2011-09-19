@@ -153,4 +153,44 @@ class Report < ActiveRecord::Base
   end 
 
 
+
+
+
+  def self.liquor_sales_to_csv(date)
+    CoInitialize.call( 0 )
+    db = AccessDb.new('c:\deagle.mdb')
+    db.open
+    # Query Here
+    db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, 
+      EmployeeFiles.SocialSecurityNumber, EmployeePayrollHistory.PayRate, EmployeePayrollHistory.RegularHours, 
+      EmployeePayrollHistory.OTPayRate, EmployeePayrollHistory.OverTimeHours, EmployeePayrollHistory.AdditionalPay, 
+      EmployeePayrollHistory.TotalTips, EmployeePayrollHistory.PayPeriodEndDate 
+      FROM EmployeePayrollHistory, EmployeeFiles, JobTitles 
+      WHERE EmployeePayrollHistory.EmployeeID = EmployeeFiles.JobTitleID 
+      AND EmployeeFiles.JobTitleID = JobTitles.JobTitleID
+      AND PayPeriodEndDate = #"+date+"#;")    
+    @liquor_sales = db.data
+    @liquor_sales.sort!
+    
+    data = CSV.generate(:force_quotes => true) do |row|
+      row << ['FirstName', 'LastName',  'JobTitleText',  'SocialSecurityNumber',  'PayRate', 'RegularHours',  'OTPayRate', 'OverTimeHours', 'PayableTips', 'NonPayableTips']
+      @liquor_sales.each do |employee|
+        row << [employee[0],
+          employee[1],
+          employee[2],
+          employee[3],
+          sprintf( "%.02f" , employee[4] ),
+          sprintf( "%.02f" , employee[5] ), 
+          sprintf( "%.02f" , employee[6] ),
+          sprintf( "%.02f" , employee[7] ),
+          sprintf( "%.02f" , employee[8] ), 
+          sprintf( "%.02f" , employee[9] )]
+      end
+    end
+    return data
+  end 
+
+
+
+
 end#end Class Report

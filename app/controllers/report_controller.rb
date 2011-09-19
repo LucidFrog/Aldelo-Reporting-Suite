@@ -117,9 +117,6 @@ class ReportController < ActionController::Base
   end
   
   
-  
-  
-  
   # For Overtime Report
   def total_hours
     CoInitialize.call( 0 )
@@ -177,4 +174,48 @@ class ReportController < ActionController::Base
     end
   end
   
-end
+  
+  
+  
+  
+  # For Liquor Sales Report
+  def liquor_sales
+    #waiting on input, don't have to do anything yet.
+    if params[:start_date]
+      #Lets query 
+      CoInitialize.call( 0 )
+      db = AccessDb.new('c:\deagle.mdb')
+      db.open
+      
+      # Query Here
+      db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, 
+        EmployeeFiles.SocialSecurityNumber, EmployeePayrollHistory.PayRate, EmployeePayrollHistory.RegularHours, 
+        EmployeePayrollHistory.OTPayRate, EmployeePayrollHistory.OverTimeHours, EmployeePayrollHistory.AdditionalPay, 
+        EmployeePayrollHistory.TotalTips, EmployeePayrollHistory.PayPeriodEndDate 
+        FROM EmployeePayrollHistory, EmployeeFiles, JobTitles 
+        WHERE EmployeePayrollHistory.EmployeeID = EmployeeFiles.JobTitleID 
+        AND EmployeeFiles.JobTitleID = JobTitles.JobTitleID
+        AND PayPeriodEndDate = #"+params[:start_date]+"#;")
+
+      @liquor_sales_data = db.data
+      @liquor_sales_data.sort!
+      @date = params[:start_date]
+      
+      render :partial => "liquor_sales"
+    end
+  end
+
+  def export_liquor_sales
+    if params[:start_date]
+      date = params[:start_date]
+      @outfile = "liquor_sales_"+date+".csv"
+      send_data Report.liquor_sales_to_csv(date), :type => 'text/csv; charset=iso-8859-1; header=present', :disposition => "attachment; filename=#{@outfile}"
+    end
+  end
+  
+  
+  
+  
+  
+  
+end#end Report Controller
