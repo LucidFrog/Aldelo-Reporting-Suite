@@ -173,7 +173,7 @@ class ReportController < ActionController::Base
       date = params[:total_hours_date]
       job_title_id = params[:job_title_id]
       @outfile = "total_hours_"+date+".csv"
-      send_data Report.overtime_to_csv(date, job_title_id), :type => 'text/csv; charset=iso-8859-1; header=present', :disposition => "attachment; filename=#{@outfile}"
+      send_data Report.total_hours_to_csv(date, job_title_id), :type => 'text/csv; charset=iso-8859-1; header=present', :disposition => "attachment; filename=#{@outfile}"
     end
   end
   

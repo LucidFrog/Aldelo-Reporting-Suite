@@ -127,26 +127,30 @@ class Report < ActiveRecord::Base
     end 
     
     # Query Here
-    db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, EmployeeTimeCards.WorkDate, EmployeeTimeCards.TotalWeeklyOverTimeMinutes
+    db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, EmployeeTimeCards.WorkDate, 
+      EmployeeTimeCards.TotalWeeklyOverTimeMinutes, EmployeeTimeCards.TotalRegularMinutes, EmployeeTimeCards.TotalWorkMinutes
       FROM (EmployeeFiles INNER JOIN JobTitles ON EmployeeFiles.JobTitleID = JobTitles.JobTitleID) 
       INNER JOIN EmployeeTimeCards ON EmployeeFiles.EmployeeID = EmployeeTimeCards.EmployeeID 
-      WHERE EmployeeTimeCards.WorkDate > #"+date+"# AND "+employee_ot_query+";")
+      WHERE "+employee_ot_query+";")
       
     
     @overtime_data = db.data
     @overtime_data.sort!
     
     data = CSV.generate(:force_quotes => true) do |row|
-      row << ['FirstName', 'LastName',  'JobTitleText',  'DateOfOvertime',  'OTHours']
+      row << ['FirstName', 'LastName',  'JobTitleText',  'WorkDate',  'OTHours', 'RegularHours', 'TotalHours']
       @overtime_data.each do |employee|
         row << [employee[0],
           employee[1],
           employee[2],
           Time.at(employee[3].to_i).strftime("%m/%d/%Y"),
-          sprintf( "%.02f" , employee[4].to_f/60 )]
+          sprintf( "%.02f" , employee[4].to_f/60 ),
+          sprintf( "%.02f" , employee[5].to_f/60 ),
+          sprintf( "%.02f" , employee[6].to_f/60 )]
       end
     end
     return data
   end 
+
 
 end#end Class Report

@@ -1,20 +1,24 @@
-%a{:href => "/report/export_overtime?overtime_date="+@date+"&job_title_id="+@job_title_id}
-  Export
-%br
-%br
-%table
-  %thead
-    %tr
-      %td FirstName
-      %td LastName
-      %td JobTitleText
-      %td DateOfOvertime
-      %td OTHours
-  %tbody
-  -for employee in @overtime_data
-    %tr
-      %td=employee[0]
-      %td=employee[1]
-      %td=employee[2]
-      %td=Time.at(employee[3].to_i).strftime("%m/%d/%Y")
-      %td=sprintf( "%.02f" , employee[4].to_f/60 )
+-if @overtime_data == []
+  %h1
+    No Data on Selected Date
+-else
+  %a{:href => "/report/export_overtime?overtime_date="+@date+"&job_title_id="+@job_title_id}
+    Export
+  %br
+  %br
+  %table
+    %thead
+      %tr
+        %td FirstName
+        %td LastName
+        %td JobTitleText
+        %td DateOfOvertime
+        %td OTHours
+    %tbody
+    -for employee in @overtime_data
+      %tr
+        %td=employee[0]
+        %td=employee[1]
+        %td=employee[2]
+        %td=Time.at(employee[3].to_i).strftime("%m/%d/%Y")
+        %td=sprintf( "%.02f" , employee[4].to_f/60 )
