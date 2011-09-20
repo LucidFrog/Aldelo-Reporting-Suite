@@ -156,35 +156,32 @@ class Report < ActiveRecord::Base
 
 
 
-  def self.liquor_sales_to_csv(date)
+  def self.liquor_sales_to_csv(start_date, end_date, liquor_type)
     CoInitialize.call( 0 )
     db = AccessDb.new('c:\deagle.mdb')
     db.open
+    
     # Query Here
-    db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, 
-      EmployeeFiles.SocialSecurityNumber, EmployeePayrollHistory.PayRate, EmployeePayrollHistory.RegularHours, 
-      EmployeePayrollHistory.OTPayRate, EmployeePayrollHistory.OverTimeHours, EmployeePayrollHistory.AdditionalPay, 
-      EmployeePayrollHistory.TotalTips, EmployeePayrollHistory.PayPeriodEndDate 
-      FROM EmployeePayrollHistory, EmployeeFiles, JobTitles 
-      WHERE EmployeePayrollHistory.EmployeeID = EmployeeFiles.JobTitleID 
-      AND EmployeeFiles.JobTitleID = JobTitles.JobTitleID
-      AND PayPeriodEndDate = #"+date+"#;")    
+    db.query("SELECT  OrderTransactions.OrderTransactionID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
+      (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod1ID = MenuModifiers.MenuModifierID),
+      (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod2ID = MenuModifiers.MenuModifierID),
+      (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod3ID = MenuModifiers.MenuModifierID)
+      FROM (OrderTransactions INNER JOIN MenuItems ON OrderTransactions.MenuItemID = MenuItems.MenuItemID)
+      INNER JOIN OrderHeaders ON OrderHeaders.OrderID = OrderTransactions.OrderID
+      WHERE MenuItems.MenuItemText = '"+liquor_type+"'
+      AND OrderHeaders.OrderDateTime > #"+start_date+"#
+      AND OrderHeaders.OrderDateTime <= #"+end_date+"#;") 
+       
     @liquor_sales = db.data
     @liquor_sales.sort!
     
     data = CSV.generate(:force_quotes => true) do |row|
-      row << ['FirstName', 'LastName',  'JobTitleText',  'SocialSecurityNumber',  'PayRate', 'RegularHours',  'OTPayRate', 'OverTimeHours', 'PayableTips', 'NonPayableTips']
-      @liquor_sales.each do |employee|
-        row << [employee[0],
-          employee[1],
-          employee[2],
-          employee[3],
-          sprintf( "%.02f" , employee[4] ),
-          sprintf( "%.02f" , employee[5] ), 
-          sprintf( "%.02f" , employee[6] ),
-          sprintf( "%.02f" , employee[7] ),
-          sprintf( "%.02f" , employee[8] ), 
-          sprintf( "%.02f" , employee[9] )]
+      row << ['FieldOne', 'FieldTwo',  'FieldThree',  'Date']
+      @liquor_sales.each do |sale|
+        row << [sale[3],
+          sale[4],
+          sale[5],
+          Time.at(sale[2].to_i).strftime("%m/%d/%Y - %I:%M%p")]
       end
     end
     return data

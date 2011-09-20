@@ -188,28 +188,34 @@ class ReportController < ActionController::Base
       db.open
       
       # Query Here
-      db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, 
-        EmployeeFiles.SocialSecurityNumber, EmployeePayrollHistory.PayRate, EmployeePayrollHistory.RegularHours, 
-        EmployeePayrollHistory.OTPayRate, EmployeePayrollHistory.OverTimeHours, EmployeePayrollHistory.AdditionalPay, 
-        EmployeePayrollHistory.TotalTips, EmployeePayrollHistory.PayPeriodEndDate 
-        FROM EmployeePayrollHistory, EmployeeFiles, JobTitles 
-        WHERE EmployeePayrollHistory.EmployeeID = EmployeeFiles.JobTitleID 
-        AND EmployeeFiles.JobTitleID = JobTitles.JobTitleID
-        AND PayPeriodEndDate = #"+params[:start_date]+"#;")
+      db.query("SELECT  OrderTransactions.OrderTransactionID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
+        (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod1ID = MenuModifiers.MenuModifierID),
+        (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod2ID = MenuModifiers.MenuModifierID),
+        (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod3ID = MenuModifiers.MenuModifierID)
+        FROM (OrderTransactions INNER JOIN MenuItems ON OrderTransactions.MenuItemID = MenuItems.MenuItemID)
+        INNER JOIN OrderHeaders ON OrderHeaders.OrderID = OrderTransactions.OrderID
+        WHERE MenuItems.MenuItemText = '"+params[:liquor_type]+"'
+        AND OrderHeaders.OrderDateTime > #"+params[:start_date].to_s+"#
+        AND OrderHeaders.OrderDateTime <= #"+params[:end_date].to_s+"#;")
 
       @liquor_sales_data = db.data
       @liquor_sales_data.sort!
-      @date = params[:start_date]
-      
+      @liquor_type = params[:liquor_type]
+      @start_date = params[:start_date]
+      @end_date = params[:end_date]
+
       render :partial => "liquor_sales"
     end
   end
 
   def export_liquor_sales
     if params[:start_date]
-      date = params[:start_date]
-      @outfile = "liquor_sales_"+date+".csv"
-      send_data Report.liquor_sales_to_csv(date), :type => 'text/csv; charset=iso-8859-1; header=present', :disposition => "attachment; filename=#{@outfile}"
+      start_date = params[:start_date]
+      end_date = params[:end_date]
+      liquor_type = params[:liquor_type]
+
+      @outfile = liquor_type+"_"+start_date+"_to_"+end_date+".csv"
+      send_data Report.liquor_sales_to_csv(start_date, end_date, liquor_type), :type => 'text/csv; charset=iso-8859-1; header=present', :disposition => "attachment; filename=#{@outfile}"
     end
   end
   
