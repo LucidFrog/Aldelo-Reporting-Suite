@@ -1,0 +1,49 @@
+-if @liquor_sales_data == []
+  %h1
+    No Data on Selected Date
+-else
+  %a{:href => "/report/export_liquor_sales_name?start_date="+@start_date+"&end_date="+@end_date+"&liquor_type="+@liquor_type+"&liquor_name="+@liquor_name}
+    Export
+  %br
+  
+  %br
+  %h1
+    =@liquor_name+" Report From "+@start_date+" to "+@end_date
+  %h3 Approximation of Drinks Sold:
+  %label Total 
+  =@liquor_name+" Drinks Sold:"
+  =@liquor_sales_data.length
+  %br
+  %label Total 
+  =@liquor_name+" On The Rocks Sold:"
+  =@on_the_rocks
+  %br
+  %label Total 
+  =@liquor_name+" Shots Sold:"
+  =@shots
+  %br
+  %label Total 
+  =@liquor_name+" Mixed and Other Drinks Sold:"
+  =@mixed
+  %br
+  
+  %br
+  %table
+    %thead
+      %tr
+        %td *
+        %td *
+        %td *
+        %td Date
+        %td *
+        %td *
+    %tbody
+    -for sale in @liquor_sales_data
+      %tr
+        %td=sale[5]
+        %td=sale[6]
+        %td=sale[7]
+        %td=Time.at(sale[2].to_i).strftime("%m/%d/%Y - %I:%M%p")
+        %td=sale[3]
+        %td=sale[4]        
+        

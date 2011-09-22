@@ -161,33 +161,77 @@ class Report < ActiveRecord::Base
     db = AccessDb.new('c:\deagle.mdb')
     db.open
     
-    # Query Here
+    #Query HERE
     db.query("SELECT  OrderTransactions.OrderTransactionID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
+       EmployeeFiles.FirstName, EmployeeFiles.LastName,
       (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod1ID = MenuModifiers.MenuModifierID),
       (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod2ID = MenuModifiers.MenuModifierID),
       (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod3ID = MenuModifiers.MenuModifierID)
-      FROM (OrderTransactions INNER JOIN MenuItems ON OrderTransactions.MenuItemID = MenuItems.MenuItemID)
-      INNER JOIN OrderHeaders ON OrderHeaders.OrderID = OrderTransactions.OrderID
+      FROM ((OrderTransactions INNER JOIN MenuItems ON OrderTransactions.MenuItemID = MenuItems.MenuItemID)
+      INNER JOIN OrderHeaders ON OrderHeaders.OrderID = OrderTransactions.OrderID)
+      INNER JOIN EmployeeFiles ON EmployeeFiles.EmployeeID = OrderHeaders.EmployeeID
       WHERE MenuItems.MenuItemText = '"+liquor_type+"'
       AND OrderHeaders.OrderDateTime > #"+start_date+"#
-      AND OrderHeaders.OrderDateTime <= #"+end_date+"#;") 
+      AND OrderHeaders.OrderDateTime <= #"+end_date+"#;")
        
     @liquor_sales = db.data
     @liquor_sales.sort!
     
     data = CSV.generate(:force_quotes => true) do |row|
-      row << ['FieldOne', 'FieldTwo',  'FieldThree',  'Date']
+      row << ['FieldOne', 'FieldTwo',  'FieldThree',  'Date', 'FirstName', 'LastName']
       @liquor_sales.each do |sale|
-        row << [sale[3],
-          sale[4],
-          sale[5],
-          Time.at(sale[2].to_i).strftime("%m/%d/%Y - %I:%M%p")]
+        row << [sale[5],
+          sale[6],
+          sale[7],
+          Time.at(sale[2].to_i).strftime("%m/%d/%Y - %I:%M%p"),
+          sale[3],
+          sale[4]]
       end
     end
     return data
   end 
 
-
+  def self.liquor_sales_name_to_csv(start_date, end_date, liquor_type, liquor_name)
+    CoInitialize.call( 0 )
+    db = AccessDb.new('c:\deagle.mdb')
+    db.open
+    
+    #Query HERE
+    db.query("SELECT  OrderTransactions.OrderTransactionID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
+       EmployeeFiles.FirstName, EmployeeFiles.LastName,
+      (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod1ID = MenuModifiers.MenuModifierID),
+      (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod2ID = MenuModifiers.MenuModifierID),
+      (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod3ID = MenuModifiers.MenuModifierID)
+      FROM ((OrderTransactions INNER JOIN MenuItems ON OrderTransactions.MenuItemID = MenuItems.MenuItemID)
+      INNER JOIN OrderHeaders ON OrderHeaders.OrderID = OrderTransactions.OrderID)
+      INNER JOIN EmployeeFiles ON EmployeeFiles.EmployeeID = OrderHeaders.EmployeeID
+      WHERE MenuItems.MenuItemText = '"+liquor_type+"'
+      AND OrderHeaders.OrderDateTime > #"+start_date+"#
+      AND OrderHeaders.OrderDateTime <= #"+end_date+"#;")
+       
+    @liquor_sales = db.data
+    @liquor_sales.sort!
+    
+    @liquor_sales_data = Array.new
+    @liquor_sales.each do |sale|
+      if sale[5] == liquor_name || sale[6] == :liquor_name || sale[7] == :liquor_name
+        @liquor_sales_data << sale 
+      end
+    end
+    
+    data = CSV.generate(:force_quotes => true) do |row|
+      row << ['FieldOne', 'FieldTwo',  'FieldThree',  'Date', 'FirstName', 'LastName']
+      @liquor_sales_data.each do |sale|
+        row << [sale[5],
+          sale[6],
+          sale[7],
+          Time.at(sale[2].to_i).strftime("%m/%d/%Y - %I:%M%p"),
+          sale[3],
+          sale[4]]
+      end
+    end
+    return data
+  end 
 
 
 end#end Class Report

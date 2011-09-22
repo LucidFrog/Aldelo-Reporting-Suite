@@ -181,19 +181,21 @@ class ReportController < ActionController::Base
   # For Liquor Sales Report
   def liquor_sales
     #waiting on input, don't have to do anything yet.
-    if params[:start_date]
+    if params[:start_date] && params[:liquor_name] == '' || params[:start_date] && params[:liquor_name] == nil
       #Lets query 
       CoInitialize.call( 0 )
       db = AccessDb.new('c:\deagle.mdb')
       db.open
       
-      # Query Here
+      # Query Here        
       db.query("SELECT  OrderTransactions.OrderTransactionID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
+         EmployeeFiles.FirstName, EmployeeFiles.LastName,
         (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod1ID = MenuModifiers.MenuModifierID),
         (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod2ID = MenuModifiers.MenuModifierID),
         (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod3ID = MenuModifiers.MenuModifierID)
-        FROM (OrderTransactions INNER JOIN MenuItems ON OrderTransactions.MenuItemID = MenuItems.MenuItemID)
-        INNER JOIN OrderHeaders ON OrderHeaders.OrderID = OrderTransactions.OrderID
+        FROM ((OrderTransactions INNER JOIN MenuItems ON OrderTransactions.MenuItemID = MenuItems.MenuItemID)
+        INNER JOIN OrderHeaders ON OrderHeaders.OrderID = OrderTransactions.OrderID)
+        INNER JOIN EmployeeFiles ON EmployeeFiles.EmployeeID = OrderHeaders.EmployeeID
         WHERE MenuItems.MenuItemText = '"+params[:liquor_type]+"'
         AND OrderHeaders.OrderDateTime > #"+params[:start_date].to_s+"#
         AND OrderHeaders.OrderDateTime <= #"+params[:end_date].to_s+"#;")
@@ -205,8 +207,61 @@ class ReportController < ActionController::Base
       @end_date = params[:end_date]
 
       render :partial => "liquor_sales"
+    #Ok lets see if we have a liquor name
+    elsif params[:start_date] && params[:liquor_name]
+      #There is a liquor name, only search for results containing 
+      #this liquor name in mod1 mod2 and mod3
+      #Lets query 
+      CoInitialize.call( 0 )
+      db = AccessDb.new('c:\deagle.mdb')
+      db.open
+      
+      # Query Here        
+      db.query("SELECT  OrderTransactions.OrderTransactionID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
+         EmployeeFiles.FirstName, EmployeeFiles.LastName,
+        (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod1ID = MenuModifiers.MenuModifierID),
+        (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod2ID = MenuModifiers.MenuModifierID),
+        (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod3ID = MenuModifiers.MenuModifierID)
+        FROM ((OrderTransactions INNER JOIN MenuItems ON OrderTransactions.MenuItemID = MenuItems.MenuItemID)
+        INNER JOIN OrderHeaders ON OrderHeaders.OrderID = OrderTransactions.OrderID)
+        INNER JOIN EmployeeFiles ON EmployeeFiles.EmployeeID = OrderHeaders.EmployeeID
+        WHERE MenuItems.MenuItemText = '"+params[:liquor_type]+"'
+        AND OrderHeaders.OrderDateTime > #"+params[:start_date].to_s+"#
+        AND OrderHeaders.OrderDateTime <= #"+params[:end_date].to_s+"#;")
+
+      @liquor_sales = db.data
+      @liquor_sales.sort!
+      @liquor_type = params[:liquor_type]
+      @liquor_name = params[:liquor_name]
+      @start_date = params[:start_date]
+      @end_date = params[:end_date]
+
+      @liquor_sales_data = Array.new
+      @liquor_sales.each do |sale|
+        if sale[3] == params[:liquor_name] || sale[4] == params[:liquor_name] || sale[5] == params[:liquor_name]
+          @liquor_sales_data << sale 
+        end
+      end
+
+      @shots = 0
+      @on_the_rocks = 0
+      @mixed = 0
+
+       p @liquor_sales_data
+
+      for sale in @liquor_sales_data
+        if sale[5] == 'Shot' || sale[6] == 'Shot' || sale[7] == 'Shot'
+          @shots +=1
+        elsif sale[5] == 'On The Rocks' || sale[6] == 'On The Rocks' || sale[7] == 'On The Rocks'
+          @on_the_rocks +=1
+        else 
+          @mixed +=1
+        end
+      end
+
+      render :partial => "liquor_sales_name"
     end
-  end
+  end#end liquor_sales
 
   def export_liquor_sales
     if params[:start_date]
@@ -219,9 +274,17 @@ class ReportController < ActionController::Base
     end
   end
   
-  
-  
-  
+  def export_liquor_sales_name
+    if params[:start_date]
+      start_date = params[:start_date]
+      end_date = params[:end_date]
+      liquor_type = params[:liquor_type]
+      liquor_name = params[:liquor_name]
+
+      @outfile = liquor_name+"_"+start_date+"_to_"+end_date+".csv"
+      send_data Report.liquor_sales_name_to_csv(start_date, end_date, liquor_type, liquor_name), :type => 'text/csv; charset=iso-8859-1; header=present', :disposition => "attachment; filename=#{@outfile}"
+    end
+  end
   
   
 end#end Report Controller
