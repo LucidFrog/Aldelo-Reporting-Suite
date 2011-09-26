@@ -1,6 +1,6 @@
 %h1 Total Hours Report
 %h3 Select Work Week Beginning Day:
-%input.datepicker_input{:name => "start_date", :value => 2.month.ago.to_date().strftime("%m/%d/%Y") }
+%input.datepicker_input{:name => "start_date", :value => 1.week.ago.to_date().strftime("%m/%d/%Y") }
 %h3 Select Job Title:
 %select.job_title_id{:name => "jobTitle"}
   -for job in @job_titles
