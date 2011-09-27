@@ -1,13 +1,13 @@
 -if @liquor_sales_data == []
-  %h1
+  %h2
     No Data on Selected Date
 -else
   %a{:href => "/report/export_liquor_sales_name?start_date="+@start_date+"&end_date="+@end_date+"&liquor_type="+@liquor_type+"&liquor_name="+@liquor_name}
-    Export
+    Export Data to CSV File
   %br
   
   %br
-  %h1
+  %h2
     =@liquor_name+" Report From "+@start_date+" to "+@end_date
   %h3 Approximation of Drinks Sold:
   %label Total 
@@ -31,12 +31,12 @@
   %table
     %thead
       %tr
-        %td *
-        %td *
-        %td *
-        %td Date
-        %td *
-        %td *
+        %td Liquor Name
+        %td Drink Style
+        %td Modifier
+        %td Date - Time of Sale
+        %td Server
+        %td Name
     %tbody
     -for sale in @liquor_sales_data
       %tr

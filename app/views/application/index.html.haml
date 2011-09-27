@@ -1,17 +1,27 @@
-%h1 BC Technology Report Suite
+.header
+	=image_tag "c:/sites/reports/app/assets/images/BCTechLogo.jpg"
+	
+%h1 Reporting Suite
 
-%a{:href => "/report/all_employees/"}
-  All Employees
-%br
-%a{:href => "/report/payroll/"}
-  Payroll
-%br
-%a{:href => "/report/overtime/"}
-  Overtime
-%br
-%a{:href => "/report/total_hours/"}
-  Total Work Hours
-%br
-%a{:href => "/report/liquor_sales/"}
-  Liquor Sales
-%br
+.customer_menu
+
+	=image_tag "c:/sites/reports/app/assets/images/CLIENT.jpg"
+	
+.report_list
+	%h5 Menu of Reports
+	%br
+	%a{:href => "/report/all_employees/"}
+		All Employees
+	%br
+	%a{:href => "/report/payroll/"}
+		Payroll
+	%br
+	%a{:href => "/report/overtime/"}
+		Overtime
+	%br
+	%a{:href => "/report/total_hours/"}
+		Total Work Hours
+	%br
+	%a{:href => "/report/liquor_sales/"}
+		Liquor Sales
+	%br
