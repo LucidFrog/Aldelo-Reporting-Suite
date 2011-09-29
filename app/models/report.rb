@@ -6,7 +6,7 @@ class Report < ActiveRecord::Base
 
   def self.all_employee_to_csv()
     CoInitialize.call( 0 )
-    db = AccessDb.new('c:\flanders.mdb')
+    db = AccessDb.new(DBLOCATION)
     db.open
     # Query the DB here
     db.query("SELECT FirstName, LastName, JobTitleText, SocialSecurityNumber FROM EmployeeFiles, JobTitles WHERE EmployeeFiles.JobTitleID = JobTitles.JobTitleID;")
@@ -28,7 +28,7 @@ class Report < ActiveRecord::Base
 
   def self.payroll_to_csv(date)
     CoInitialize.call( 0 )
-    db = AccessDb.new('c:\flanders.mdb')
+    db = AccessDb.new(DBLOCATION)
     db.open
     # Query Here
     db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, 
@@ -63,7 +63,7 @@ class Report < ActiveRecord::Base
   def self.overtime_to_csv(date, jobTitleId)
     #Lets query! 
     CoInitialize.call( 0 )
-    db = AccessDb.new('c:\flanders.mdb')
+    db = AccessDb.new(DBLOCATION)
     db.open
 
     #Get all of the SSNS for the Employees that have the selected JOBTITLE      
@@ -108,7 +108,7 @@ class Report < ActiveRecord::Base
   def self.total_hours_to_csv(date, jobTitleId)
     #Lets query! 
     CoInitialize.call( 0 )
-    db = AccessDb.new('c:\flanders.mdb')
+    db = AccessDb.new(DBLOCATION)
     db.open
 
     #Get all of the SSNS for the Employees that have the selected JOBTITLE      
@@ -158,7 +158,7 @@ class Report < ActiveRecord::Base
 
   def self.liquor_sales_to_csv(start_date, end_date, liquor_type)
     CoInitialize.call( 0 )
-    db = AccessDb.new('c:\deagle.mdb')
+    db = AccessDb.new(DBLOCATION)
     db.open
     
     #Query HERE
@@ -193,7 +193,7 @@ class Report < ActiveRecord::Base
 
   def self.liquor_sales_name_to_csv(start_date, end_date, liquor_type, liquor_name)
     CoInitialize.call( 0 )
-    db = AccessDb.new('c:\deagle.mdb')
+    db = AccessDb.new(DBLOCATION)
     db.open
     
     #Query HERE

@@ -1,0 +1,1 @@
+DBLOCATION = 'c:\deagle.mdb'

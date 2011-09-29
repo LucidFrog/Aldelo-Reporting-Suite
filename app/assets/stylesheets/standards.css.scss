@@ -19,13 +19,10 @@ h2 {
 	color:black;
 	text-align:center;
 	background-color:silver;
-	text-shadow: 1px 1px 1px black;
 
 }
 
 h1 {
-	
-
     text-transform: uppercase;
     text-align: center;
     color: black;
@@ -33,7 +30,6 @@ h1 {
     letter-spacing: 4px;
     font: 36px bold italic Bookman, serif;
     position: relative;
-
 }
 h1:after, h1:before
 {
@@ -42,7 +38,7 @@ h1:after, h1:before
     height: 10px;
     position: absolute;
     top: 15px;
-    width: 400px;
+    width: 20%;
 }
 
 h1:after
@@ -105,13 +101,12 @@ body
 	height:500px;
 	width:50%;
 	float: left;
-	a
-	{
-		font: 24px bold Bookman, serif;
+	font: 24px bold Bookman, serif;
+
+	a{
 		color:Green;
 	}
-	h5
-	{ 
+	h5{ 
 		margin: 50px 0 0 0;
 		font: 30px bold Bookman, serif;
 	}

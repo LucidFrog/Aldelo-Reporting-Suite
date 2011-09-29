@@ -3,6 +3,7 @@ class ReportController < ActionController::Base
   # https://gist.github.com/407804 this post fixed a big bug with 1.9.2 and win32ole
   # Pretty huge
   
+  
   require 'win32ole'
   require 'Win32API' 
   CoInitialize = Win32API.new('ole32', 'CoInitialize', 'P', 'L')
@@ -10,7 +11,7 @@ class ReportController < ActionController::Base
   # For Employee Report
   def all_employees
     CoInitialize.call( 0 )
-    db = AccessDb.new('c:\flanders.mdb')
+    db = AccessDb.new(DBLOCATION)
     db.open
     
     # Query the DB here
@@ -30,7 +31,7 @@ class ReportController < ActionController::Base
     if params[:payroll_date]
       #Lets query 
       CoInitialize.call( 0 )
-      db = AccessDb.new('c:\flanders.mdb')
+      db = AccessDb.new(DBLOCATION)
       db.open
       
       # Query Here
@@ -62,7 +63,7 @@ class ReportController < ActionController::Base
   # For Overtime Report
   def overtime
     CoInitialize.call( 0 )
-    db = AccessDb.new('c:\flanders.mdb')
+    db = AccessDb.new(DBLOCATION)
     db.open
     # Query Here For Basic Selection Information
     
@@ -73,7 +74,7 @@ class ReportController < ActionController::Base
     if params[:overtime_date] && params[:job_title_id]
       #Lets query! 
       CoInitialize.call( 0 )
-      db = AccessDb.new('c:\flanders.mdb')
+      db = AccessDb.new(DBLOCATION)
       db.open
 
       #Get all of the SSNS for the Employees that have the selected JOBTITLE      
@@ -120,7 +121,7 @@ class ReportController < ActionController::Base
   # For Overtime Report
   def total_hours
     CoInitialize.call( 0 )
-    db = AccessDb.new('c:\flanders.mdb')
+    db = AccessDb.new(DBLOCATION)
     db.open
     # Query Here For Basic Selection Information
     
@@ -131,7 +132,7 @@ class ReportController < ActionController::Base
     if params[:total_hours_date] && params[:job_title_id]
       #Lets query! 
       CoInitialize.call( 0 )
-      db = AccessDb.new('c:\flanders.mdb')
+      db = AccessDb.new(DBLOCATION)
       db.open
 
       #Get all of the SSNS for the Employees that have the selected JOBTITLE      
@@ -184,7 +185,7 @@ class ReportController < ActionController::Base
     if params[:start_date] && params[:liquor_name] == '' || params[:start_date] && params[:liquor_name] == nil
       #Lets query 
       CoInitialize.call( 0 )
-      db = AccessDb.new('c:\deagle.mdb')
+      db = AccessDb.new(DBLOCATION)
       db.open
       
       # Query Here        
@@ -213,7 +214,7 @@ class ReportController < ActionController::Base
       #this liquor name in mod1 mod2 and mod3
       #Lets query 
       CoInitialize.call( 0 )
-      db = AccessDb.new('c:\deagle.mdb')
+      db = AccessDb.new(DBLOCATION)
       db.open
       
       # Query Here        

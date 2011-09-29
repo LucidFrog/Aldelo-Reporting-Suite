@@ -1,11 +1,12 @@
 -if @payroll_data == []
-  %h1
+  %h2
     No Data on Selected Date
 -else
   %a{:href => "/report/export_payroll?payroll_date="+@date}
-    Export
+    Export to CSV File
   %br
   %br
+  =link_to "Home", "/"
   %table
     %thead
       %tr

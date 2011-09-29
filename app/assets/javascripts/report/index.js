@@ -5,8 +5,3 @@
 // the compiled file.
 //
 //= require_tree .
-
-$(document).ready(function(){
-	$(".datepicker_input").datepick();
-	})
-	

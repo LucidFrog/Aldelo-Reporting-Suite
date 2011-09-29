@@ -3,9 +3,10 @@
     No Data on Selected Date
 -else
   %a{:href => "/report/export_liquor_sales_name?start_date="+@start_date+"&end_date="+@end_date+"&liquor_type="+@liquor_type+"&liquor_name="+@liquor_name}
-    Export Data to CSV File
+    Export to CSV File
   %br
-  
+  %br
+  =link_to "Home", "/" 
   %br
   %h2
     =@liquor_name+" Report From "+@start_date+" to "+@end_date

@@ -1,11 +1,12 @@
 -if @total_hours_data == []
-  %h1
+  %h2
     No Data on Selected Date
 -else
   %a{:href => "/report/export_total_hours?total_hours_date="+@date+"&job_title_id="+@job_title_id}
-    Export
+    Export to CSV File
   %br
   %br
+  =link_to "Home", "/"
   %table
     %thead
       %tr

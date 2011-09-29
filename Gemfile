@@ -7,6 +7,8 @@ gem 'rails', '3.1.0'
 
 gem 'sqlite3'
 gem 'haml'
+#gem 'mongrel', '1.2.0.pre2'
+#gem 'mongrel_service'
 
 
 # Gems used only for assets and not required
