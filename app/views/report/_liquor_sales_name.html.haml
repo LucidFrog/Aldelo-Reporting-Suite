@@ -38,13 +38,15 @@
         %td Date - Time of Sale
         %td Server
         %td Name
+        %td Order#
     %tbody
     -for sale in @liquor_sales_data
       %tr
-        %td=sale[5]
         %td=sale[6]
         %td=sale[7]
-        %td=Time.at(sale[2].to_i).strftime("%m/%d/%Y - %I:%M%p")
-        %td=sale[3]
-        %td=sale[4]        
-        
+        %td=sale[8]
+        %td=Time.at(sale[3].to_i).strftime("%m/%d/%Y - %I:%M%p")
+        %td=sale[4]
+        %td=sale[5]        
+        %td=sale[1]        
+       

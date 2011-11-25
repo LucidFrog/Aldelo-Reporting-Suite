@@ -189,7 +189,7 @@ class ReportController < ActionController::Base
       db.open
       
       # Query Here        
-      db.query("SELECT  OrderTransactions.OrderTransactionID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
+      db.query("SELECT DISTINCT OrderTransactions.OrderTransactionID, OrderTransactions.OrderID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
          EmployeeFiles.FirstName, EmployeeFiles.LastName,
         (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod1ID = MenuModifiers.MenuModifierID),
         (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod2ID = MenuModifiers.MenuModifierID),
@@ -218,7 +218,7 @@ class ReportController < ActionController::Base
       db.open
       
       # Query Here        
-      db.query("SELECT  OrderTransactions.OrderTransactionID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
+      db.query("SELECT  OrderTransactions.OrderTransactionID, OrderTransactions.OrderID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
          EmployeeFiles.FirstName, EmployeeFiles.LastName,
         (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod1ID = MenuModifiers.MenuModifierID),
         (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod2ID = MenuModifiers.MenuModifierID),
@@ -239,7 +239,7 @@ class ReportController < ActionController::Base
 
       @liquor_sales_data = Array.new
       @liquor_sales.each do |sale|
-        if sale[3] == params[:liquor_name] || sale[4] == params[:liquor_name] || sale[5] == params[:liquor_name]
+        if sale[4] == params[:liquor_name] || sale[5] == params[:liquor_name] || sale[6] == params[:liquor_name]
           @liquor_sales_data << sale 
         end
       end
