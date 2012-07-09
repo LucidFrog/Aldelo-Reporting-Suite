@@ -29,7 +29,7 @@ class ReportController < ActionController::Base
   def payroll
     #waiting on input, don't have to do anything yet.
     if params[:payroll_date]
-      @payroll_data = Report.payroll_data(params[:payroll_data])
+      @payroll_data = Report.payroll_data(params[:payroll_date])
       @payroll_data.sort!
       @date = params[:payroll_date]
       
