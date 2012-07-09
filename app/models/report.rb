@@ -26,7 +26,11 @@ class Report < ActiveRecord::Base
     return data
   end
 
-  def self.payroll_query(db, date)
+  def self.payroll_data(date)
+    #Lets query 
+    CoInitialize.call( 0 )
+    db = AccessDb.new(DBLOCATION)
+    db.open
     db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, 
              EmployeeFiles.SocialSecurityNumber, EmployeePayrollHistory.PayRate,
              EmployeePayrollHistory.RegularHours, EmployeePayrollHistory.OTPayRate, 
@@ -36,16 +40,11 @@ class Report < ActiveRecord::Base
              EmployeePayrollHistory.EmployeeID = EmployeeFiles.EmployeeID ) INNER JOIN JobTitles 
              ON  EmployeeFiles.JobTitleID = JobTitles.JobTitleID) 
              WHERE PayPeriodEndDate = ##{date}#; ")
-    db
+    return db.data
   end
 
   def self.payroll_to_csv(date)
-    CoInitialize.call( 0 )
-    db = AccessDb.new(DBLOCATION)
-    db.open
-    # Query Here
-    db = Report.payroll_query(db, date)
-    @payroll = db.data
+    @payroll = Report.payroll_data(date)
     @payroll.sort!
     
     data = CSV.generate(:force_quotes => true) do |row|
