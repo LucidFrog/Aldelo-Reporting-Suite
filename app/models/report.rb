@@ -26,19 +26,25 @@ class Report < ActiveRecord::Base
     return data
   end
 
+  def self.payroll_query(db, date)
+    db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, 
+             EmployeeFiles.SocialSecurityNumber, EmployeePayrollHistory.PayRate,
+             EmployeePayrollHistory.RegularHours, EmployeePayrollHistory.OTPayRate, 
+             EmployeePayrollHistory.OverTimeHours, EmployeePayrollHistory.AdditionalPay, 
+             EmployeePayrollHistory.TotalTips, EmployeePayrollHistory.PayPeriodEndDate 
+             FROM ((EmployeePayrollHistory INNER JOIN EmployeeFiles ON  
+             EmployeePayrollHistory.EmployeeID = EmployeeFiles.EmployeeID ) INNER JOIN JobTitles 
+             ON  EmployeeFiles.JobTitleID = JobTitles.JobTitleID) 
+             WHERE PayPeriodEndDate = ##{date}#; ")
+    db
+  end
+
   def self.payroll_to_csv(date)
     CoInitialize.call( 0 )
     db = AccessDb.new(DBLOCATION)
     db.open
     # Query Here
-    db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, 
-      EmployeeFiles.SocialSecurityNumber, EmployeePayrollHistory.PayRate, EmployeePayrollHistory.RegularHours, 
-      EmployeePayrollHistory.OTPayRate, EmployeePayrollHistory.OverTimeHours, EmployeePayrollHistory.AdditionalPay, 
-      EmployeePayrollHistory.TotalTips, EmployeePayrollHistory.PayPeriodEndDate 
-      FROM EmployeePayrollHistory, EmployeeFiles, JobTitles 
-      WHERE EmployeePayrollHistory.EmployeeID = EmployeeFiles.JobTitleID 
-      AND EmployeeFiles.JobTitleID = JobTitles.JobTitleID
-      AND PayPeriodEndDate = #"+date+"#;")    
+    db = Report.payroll_query(db, date)
     @payroll = db.data
     @payroll.sort!
     

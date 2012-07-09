@@ -34,15 +34,16 @@ class ReportController < ActionController::Base
       db = AccessDb.new(DBLOCATION)
       db.open
       
-      # Query Here
-      db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, 
-        EmployeeFiles.SocialSecurityNumber, EmployeePayrollHistory.PayRate, EmployeePayrollHistory.RegularHours, 
-        EmployeePayrollHistory.OTPayRate, EmployeePayrollHistory.OverTimeHours, EmployeePayrollHistory.AdditionalPay, 
-        EmployeePayrollHistory.TotalTips, EmployeePayrollHistory.PayPeriodEndDate 
-        FROM EmployeePayrollHistory, EmployeeFiles, JobTitles 
-        WHERE EmployeePayrollHistory.EmployeeID = EmployeeFiles.JobTitleID 
-        AND EmployeeFiles.JobTitleID = JobTitles.JobTitleID
-        AND PayPeriodEndDate = #"+params[:payroll_date]+"#;")
+      ## Query Here
+      #db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, 
+      #  EmployeeFiles.SocialSecurityNumber, EmployeePayrollHistory.PayRate, EmployeePayrollHistory.RegularHours, 
+      #  EmployeePayrollHistory.OTPayRate, EmployeePayrollHistory.OverTimeHours, EmployeePayrollHistory.AdditionalPay, 
+      #  EmployeePayrollHistory.TotalTips, EmployeePayrollHistory.PayPeriodEndDate 
+      #  FROM EmployeePayrollHistory, EmployeeFiles, JobTitles 
+      #  WHERE EmployeePayrollHistory.EmployeeID = EmployeeFiles.JobTitleID 
+      #  AND EmployeeFiles.JobTitleID = JobTitles.JobTitleID
+      #  AND PayPeriodEndDate = #"+params[:payroll_date]+"#;")
+      db = Report.payroll_query(db, params[:payroll_data])
 
       @payroll_data = db.data
       @payroll_data.sort!
