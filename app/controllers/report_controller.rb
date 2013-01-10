@@ -131,13 +131,13 @@ class ReportController < ActionController::Base
         counter = 0
         for ssn in @ssns
           if counter == 0
-            employee_ssn_query += "EmployeeFiles.SocialSecurityNumber = '#{ssn}'"
+            employee_ssn_query += "EmployeeFiles.SocialSecurityNumber = '#{ssn[0]}'"
           else
-            employee_ssn_query += " OR EmployeeFiles.SocialSecurityNumber = '#{ssn}'"
+            employee_ssn_query += " OR EmployeeFiles.SocialSecurityNumber = '#{ssn[0]}'"
           end
           counter += 1
         end
-        
+        puts employee_ssn_query
         # Query Here
         db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, EmployeeTimeCards.WorkDate, 
           EmployeeTimeCards.TotalWeeklyOverTimeMinutes, EmployeeTimeCards.TotalRegularMinutes, EmployeeTimeCards.TotalWorkMinutes
