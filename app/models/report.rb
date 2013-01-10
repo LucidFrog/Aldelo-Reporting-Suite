@@ -26,20 +26,27 @@ class Report < ActiveRecord::Base
     return data
   end
 
-  def self.payroll_to_csv(date)
+  def self.payroll_data(date)
+    #Lets query 
     CoInitialize.call( 0 )
     db = AccessDb.new(DBLOCATION)
     db.open
-    # Query Here
+	puts 'db.open'
     db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, 
-      EmployeeFiles.SocialSecurityNumber, EmployeePayrollHistory.PayRate, EmployeePayrollHistory.RegularHours, 
-      EmployeePayrollHistory.OTPayRate, EmployeePayrollHistory.OverTimeHours, EmployeePayrollHistory.AdditionalPay, 
-      EmployeePayrollHistory.TotalTips, EmployeePayrollHistory.PayPeriodEndDate 
-      FROM EmployeePayrollHistory, EmployeeFiles, JobTitles 
-      WHERE EmployeePayrollHistory.EmployeeID = EmployeeFiles.JobTitleID 
-      AND EmployeeFiles.JobTitleID = JobTitles.JobTitleID
-      AND PayPeriodEndDate = #"+date+"#;")    
-    @payroll = db.data
+             EmployeeFiles.SocialSecurityNumber, EmployeePayrollHistory.PayRate,
+             EmployeePayrollHistory.RegularHours, EmployeePayrollHistory.OTPayRate, 
+             EmployeePayrollHistory.OverTimeHours, EmployeePayrollHistory.AdditionalPay, 
+             EmployeePayrollHistory.TotalTips, EmployeePayrollHistory.PayPeriodEndDate 
+             FROM ((EmployeePayrollHistory INNER JOIN EmployeeFiles ON  
+             EmployeePayrollHistory.EmployeeID = EmployeeFiles.EmployeeID ) INNER JOIN JobTitles 
+             ON  EmployeeFiles.JobTitleID = JobTitles.JobTitleID) 
+             WHERE PayPeriodEndDate = ##{date}#; ")
+    puts db.data.class
+	return db.data
+  end
+
+  def self.payroll_to_csv(date)
+    @payroll = Report.payroll_data(date)
     @payroll.sort!
     
     data = CSV.generate(:force_quotes => true) do |row|
@@ -162,7 +169,7 @@ class Report < ActiveRecord::Base
     db.open
     
     #Query HERE
-    db.query("SELECT  OrderTransactions.OrderTransactionID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
+    db.query("SELECT  OrderTransactions.OrderTransactionID, OrderTransactions.OrderID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
        EmployeeFiles.FirstName, EmployeeFiles.LastName,
       (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod1ID = MenuModifiers.MenuModifierID),
       (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod2ID = MenuModifiers.MenuModifierID),
@@ -178,14 +185,15 @@ class Report < ActiveRecord::Base
     @liquor_sales.sort!
     
     data = CSV.generate(:force_quotes => true) do |row|
-      row << ['FieldOne', 'FieldTwo',  'FieldThree',  'Date', 'FirstName', 'LastName']
+      row << ['FieldOne', 'FieldTwo',  'FieldThree',  'Date', 'FirstName', 'LastName', 'Order#']
       @liquor_sales.each do |sale|
-        row << [sale[5],
-          sale[6],
+        row << [sale[6],
           sale[7],
-          Time.at(sale[2].to_i).strftime("%m/%d/%Y - %I:%M%p"),
-          sale[3],
-          sale[4]]
+          sale[8],
+          Time.at(sale[3].to_i).strftime("%m/%d/%Y - %I:%M%p"),
+          sale[4],
+          sale[5],
+          sale[1]]
       end
     end
     return data
@@ -197,8 +205,8 @@ class Report < ActiveRecord::Base
     db.open
     
     #Query HERE
-    db.query("SELECT  OrderTransactions.OrderTransactionID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
-       EmployeeFiles.FirstName, EmployeeFiles.LastName,
+    db.query("SELECT  OrderTransactions.OrderTransactionID, OrderTransactions.OrderID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
+       EmployeeFiles.FirstName, EmployeeFiles.LastName, 
       (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod1ID = MenuModifiers.MenuModifierID),
       (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod2ID = MenuModifiers.MenuModifierID),
       (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod3ID = MenuModifiers.MenuModifierID)
@@ -214,20 +222,21 @@ class Report < ActiveRecord::Base
     
     @liquor_sales_data = Array.new
     @liquor_sales.each do |sale|
-      if sale[5] == liquor_name || sale[6] == :liquor_name || sale[7] == :liquor_name
+      if sale[6] == liquor_name || sale[7] == :liquor_name || sale[8] == :liquor_name
         @liquor_sales_data << sale 
       end
     end
     
     data = CSV.generate(:force_quotes => true) do |row|
-      row << ['FieldOne', 'FieldTwo',  'FieldThree',  'Date', 'FirstName', 'LastName']
+      row << ['FieldOne', 'FieldTwo',  'FieldThree',  'Date', 'FirstName', 'LastName', 'Order#']
       @liquor_sales_data.each do |sale|
-        row << [sale[5],
-          sale[6],
+        row << [sale[6],
           sale[7],
-          Time.at(sale[2].to_i).strftime("%m/%d/%Y - %I:%M%p"),
-          sale[3],
-          sale[4]]
+          sale[8],
+          Time.at(sale[3].to_i).strftime("%m/%d/%Y - %I:%M%p"),
+          sale[4],
+          sale[5],
+          sale[1]]
       end
     end
     return data

@@ -29,22 +29,7 @@ class ReportController < ActionController::Base
   def payroll
     #waiting on input, don't have to do anything yet.
     if params[:payroll_date]
-      #Lets query 
-      CoInitialize.call( 0 )
-      db = AccessDb.new(DBLOCATION)
-      db.open
-      
-      # Query Here
-      db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, 
-        EmployeeFiles.SocialSecurityNumber, EmployeePayrollHistory.PayRate, EmployeePayrollHistory.RegularHours, 
-        EmployeePayrollHistory.OTPayRate, EmployeePayrollHistory.OverTimeHours, EmployeePayrollHistory.AdditionalPay, 
-        EmployeePayrollHistory.TotalTips, EmployeePayrollHistory.PayPeriodEndDate 
-        FROM EmployeePayrollHistory, EmployeeFiles, JobTitles 
-        WHERE EmployeePayrollHistory.EmployeeID = EmployeeFiles.JobTitleID 
-        AND EmployeeFiles.JobTitleID = JobTitles.JobTitleID
-        AND PayPeriodEndDate = #"+params[:payroll_date]+"#;")
-
-      @payroll_data = db.data
+      @payroll_data = Report.payroll_data(params[:payroll_date])
       @payroll_data.sort!
       @date = params[:payroll_date]
       
@@ -138,27 +123,35 @@ class ReportController < ActionController::Base
       #Get all of the SSNS for the Employees that have the selected JOBTITLE      
       db.query("SELECT SocialSecurityNumber FROM EmployeeFiles WHERE JobTitleID = "+params[:job_title_id]+";")
       @ssns = db.data
-
-      #structure the last string to be attached to the query
-      employee_ot_query = ""
-      counter = 0
-      for ssn in @ssns
-        employee_ot_query += "EmployeeTimeCards.WorkDate >= #"+params[:total_hours_date]+"# AND EmployeeFiles.SocialSecurityNumber = '"+ssn[0]+"'"
-        counter +=1
-        if counter > 0 && counter != @ssns.length
-          employee_ot_query += " OR "
-        end
-      end 
+	  puts "len: #{@ssns.length}"
+	  if @ssns.length > 0
+	    #structure the last string to be attached to the query
+        employee_ot_query = ""
+        counter = 0
+        for ssn in @ssns
+		  if ssn[0] == nil
+			  ssn[0] = ""
+		  end
+          employee_ot_query += "EmployeeTimeCards.WorkDate >= #"+params[:total_hours_date]+"# AND EmployeeFiles.SocialSecurityNumber = '"+ssn[0]+"'"
+          counter +=1
+          if counter > 0 && counter != @ssns.length
+            employee_ot_query += " OR "
+          end
+        end 
+	    puts employee_ot_query
       
-      # Query Here
-      db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, EmployeeTimeCards.WorkDate, 
-        EmployeeTimeCards.TotalWeeklyOverTimeMinutes, EmployeeTimeCards.TotalRegularMinutes, EmployeeTimeCards.TotalWorkMinutes
-        FROM (EmployeeFiles INNER JOIN JobTitles ON EmployeeFiles.JobTitleID = JobTitles.JobTitleID) 
-        INNER JOIN EmployeeTimeCards ON EmployeeFiles.EmployeeID = EmployeeTimeCards.EmployeeID 
-        WHERE "+employee_ot_query+";")
+        # Query Here
+        db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, EmployeeTimeCards.WorkDate, 
+          EmployeeTimeCards.TotalWeeklyOverTimeMinutes, EmployeeTimeCards.TotalRegularMinutes, EmployeeTimeCards.TotalWorkMinutes
+          FROM (EmployeeFiles INNER JOIN JobTitles ON EmployeeFiles.JobTitleID = JobTitles.JobTitleID) 
+          INNER JOIN EmployeeTimeCards ON EmployeeFiles.EmployeeID = EmployeeTimeCards.EmployeeID 
+          WHERE "+employee_ot_query+";")
       
-      @total_hours_data = db.data
-      @total_hours_data.sort!
+        @total_hours_data = db.data
+        @total_hours_data.sort!
+	  else
+	    @total_hours_data = []
+	  end
       @date = params[:total_hours_date]
       @job_title_id = params[:job_title_id]
       
@@ -189,7 +182,7 @@ class ReportController < ActionController::Base
       db.open
       
       # Query Here        
-      db.query("SELECT  OrderTransactions.OrderTransactionID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
+      db.query("SELECT DISTINCT OrderTransactions.OrderTransactionID, OrderTransactions.OrderID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
          EmployeeFiles.FirstName, EmployeeFiles.LastName,
         (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod1ID = MenuModifiers.MenuModifierID),
         (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod2ID = MenuModifiers.MenuModifierID),
@@ -218,7 +211,7 @@ class ReportController < ActionController::Base
       db.open
       
       # Query Here        
-      db.query("SELECT  OrderTransactions.OrderTransactionID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
+      db.query("SELECT  OrderTransactions.OrderTransactionID, OrderTransactions.OrderID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
          EmployeeFiles.FirstName, EmployeeFiles.LastName,
         (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod1ID = MenuModifiers.MenuModifierID),
         (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod2ID = MenuModifiers.MenuModifierID),
@@ -239,7 +232,7 @@ class ReportController < ActionController::Base
 
       @liquor_sales_data = Array.new
       @liquor_sales.each do |sale|
-        if sale[3] == params[:liquor_name] || sale[4] == params[:liquor_name] || sale[5] == params[:liquor_name]
+        if sale[4] == params[:liquor_name] || sale[5] == params[:liquor_name] || sale[6] == params[:liquor_name]
           @liquor_sales_data << sale 
         end
       end
