@@ -123,38 +123,35 @@ class ReportController < ActionController::Base
       #Get all of the SSNS for the Employees that have the selected JOBTITLE      
       db.query("SELECT SocialSecurityNumber FROM EmployeeFiles WHERE JobTitleID = "+params[:job_title_id]+";")
       @ssns = db.data
-	  puts "len: #{@ssns.length}"
-	  if @ssns.length > 0
-	    #structure the last string to be attached to the query
-        employee_ot_query = ""
+      puts "len: #{@ssns.length}"
+
+      if @ssns.length > 0
+        #structure the last string to be attached to the query
+        employee_ssn_query = ''
         counter = 0
         for ssn in @ssns
-		  if ssn[0] == nil
-			  ssn[0] = ""
-		  end
-          employee_ot_query += "EmployeeTimeCards.WorkDate >= #"+params[:total_hours_date]+"# AND EmployeeFiles.SocialSecurityNumber = '"+ssn[0]+"'"
-          counter +=1
-          if counter > 0 && counter != @ssns.length
-            employee_ot_query += " OR "
+          if counter == 0
+            employee_ssn_query += "EmployeeFiles.SocialSecurityNumber = '#{ssn}'"
+          else
+            employee_ssn_query += " OR EmployeeFiles.SocialSecurityNumber = '#{ssn}'"
           end
-        end 
-	    puts employee_ot_query
-      
+          counter += 1
+        end
+        
         # Query Here
         db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, EmployeeTimeCards.WorkDate, 
           EmployeeTimeCards.TotalWeeklyOverTimeMinutes, EmployeeTimeCards.TotalRegularMinutes, EmployeeTimeCards.TotalWorkMinutes
           FROM (EmployeeFiles INNER JOIN JobTitles ON EmployeeFiles.JobTitleID = JobTitles.JobTitleID) 
           INNER JOIN EmployeeTimeCards ON EmployeeFiles.EmployeeID = EmployeeTimeCards.EmployeeID 
-          WHERE "+employee_ot_query+";")
-      
+          WHERE EmployeeTimeCards.WorkDate >= ##{params[:total_hours_date]}# AND (#{employee_ssn_query});")
         @total_hours_data = db.data
         @total_hours_data.sort!
-	  else
-	    @total_hours_data = []
-	  end
+      else
+        @total_hours_data = []
+      end
       @date = params[:total_hours_date]
       @job_title_id = params[:job_title_id]
-      
+
       render :partial => "total_hours"
     end
   end
