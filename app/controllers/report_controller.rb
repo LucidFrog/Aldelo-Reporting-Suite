@@ -37,24 +37,17 @@ class ReportController < ActionController::Base
   
   # For Overtime Report
   def overtime
-    CoInitialize.call( 0 )
-    db = AccessDb.new(DBLOCATION)
-    db.open
-    # Query Here For Basic Selection Information
-    
-    db.query("SELECT JobTitleID, JobTitleText FROM JobTitles;")
-    @job_titles = db.data
+    db = SQLite3::Database.new("db/flanders.sqlite3")
+    rows = db.execute("SELECT JobTitleID, JobTitleText FROM JobTitles;")
+    @job_titles = rows
 
     #waiting on input, don't have to do anything yet.
     if params[:overtime_date] && params[:job_title_id]
-      #Lets query! 
-      CoInitialize.call( 0 )
-      db = AccessDb.new(DBLOCATION)
-      db.open
+      db = SQLite3::Database.new("db/flanders.sqlite3")
 
       #Get all of the SSNS for the Employees that have the selected JOBTITLE      
-      db.query("SELECT SocialSecurityNumber FROM EmployeeFiles WHERE JobTitleID = "+params[:job_title_id]+";")
-      @ssns = db.data
+      rows = db.execute("SELECT SocialSecurityNumber FROM EmployeeFiles WHERE JobTitleID = "+params[:job_title_id]+";")
+      @ssns = rows
 
       #structure the last string to be attached to the query
       employee_ot_query = ""
@@ -68,13 +61,13 @@ class ReportController < ActionController::Base
       end 
       
       # Query Here
-      db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, EmployeeTimeCards.WorkDate, EmployeeTimeCards.TotalWeeklyOverTimeMinutes
+      rows = db.execute("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, EmployeeTimeCards.WorkDate, EmployeeTimeCards.TotalWeeklyOverTimeMinutes
         FROM (EmployeeFiles INNER JOIN JobTitles ON EmployeeFiles.JobTitleID = JobTitles.JobTitleID) 
         INNER JOIN EmployeeTimeCards ON EmployeeFiles.EmployeeID = EmployeeTimeCards.EmployeeID 
         WHERE EmployeeTimeCards.WorkDate > #"+params[:overtime_date]+"#
         AND EmployeeTimeCards.TotalWeeklyOverTimeMinutes > 0 AND "+employee_ot_query+";")
       
-      @overtime_data = db.data
+      @overtime_data = rows
       @overtime_data.sort!
       @date = params[:overtime_date]
       @job_title_id = params[:job_title_id]
@@ -95,24 +88,16 @@ class ReportController < ActionController::Base
   
   # For Overtime Report
   def total_hours
-    CoInitialize.call( 0 )
-    db = AccessDb.new(DBLOCATION)
-    db.open
-    # Query Here For Basic Selection Information
-    
-    db.query("SELECT JobTitleID, JobTitleText FROM JobTitles;")
-    @job_titles = db.data
+    db = SQLite3::Database.new("db/flanders.sqlite3")
+    rows = db.execute("SELECT JobTitleID, JobTitleText FROM JobTitles;")
+    @job_titles = rows
 
     #waiting on input, don't have to do anything yet.
     if params[:total_hours_date] && params[:job_title_id]
       #Lets query! 
-      CoInitialize.call( 0 )
-      db = AccessDb.new(DBLOCATION)
-      db.open
-
-      #Get all of the SSNS for the Employees that have the selected JOBTITLE      
-      db.query("SELECT SocialSecurityNumber FROM EmployeeFiles WHERE JobTitleID = "+params[:job_title_id]+";")
-      @ssns = db.data
+      db = SQLite3::Database.new("db/flanders.sqlite3")
+      rows = db.execute("SELECT SocialSecurityNumber FROM EmployeeFiles WHERE JobTitleID = "+params[:job_title_id]+";")
+      @ssns = rows
 
       #structure the last string to be attached to the query
       employee_ot_query = ""
@@ -126,13 +111,13 @@ class ReportController < ActionController::Base
       end 
       
       # Query Here
-      db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, EmployeeTimeCards.WorkDate, 
+      rows = db.execute("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, EmployeeTimeCards.WorkDate, 
         EmployeeTimeCards.TotalWeeklyOverTimeMinutes, EmployeeTimeCards.TotalRegularMinutes, EmployeeTimeCards.TotalWorkMinutes
         FROM (EmployeeFiles INNER JOIN JobTitles ON EmployeeFiles.JobTitleID = JobTitles.JobTitleID) 
         INNER JOIN EmployeeTimeCards ON EmployeeFiles.EmployeeID = EmployeeTimeCards.EmployeeID 
         WHERE "+employee_ot_query+";")
       
-      @total_hours_data = db.data
+      @total_hours_data = rows
       @total_hours_data.sort!
       @date = params[:total_hours_date]
       @job_title_id = params[:job_title_id]
@@ -158,13 +143,8 @@ class ReportController < ActionController::Base
   def liquor_sales
     #waiting on input, don't have to do anything yet.
     if params[:start_date] && params[:liquor_name] == '' || params[:start_date] && params[:liquor_name] == nil
-      #Lets query 
-      CoInitialize.call( 0 )
-      db = AccessDb.new(DBLOCATION)
-      db.open
-      
-      # Query Here        
-      db.query("SELECT DISTINCT OrderTransactions.OrderTransactionID, OrderTransactions.OrderID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
+      db = SQLite3::Database.new("db/flanders.sqlite3")
+      rows = db.execute("SELECT DISTINCT OrderTransactions.OrderTransactionID, OrderTransactions.OrderID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
          EmployeeFiles.FirstName, EmployeeFiles.LastName,
         (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod1ID = MenuModifiers.MenuModifierID),
         (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod2ID = MenuModifiers.MenuModifierID),
@@ -176,7 +156,7 @@ class ReportController < ActionController::Base
         AND OrderHeaders.OrderDateTime > #"+params[:start_date].to_s+"#
         AND OrderHeaders.OrderDateTime <= #"+params[:end_date].to_s+"#;")
 
-      @liquor_sales_data = db.data
+      @liquor_sales_data = rows
       @liquor_sales_data.sort!
       @liquor_type = params[:liquor_type]
       @start_date = params[:start_date]
@@ -188,12 +168,9 @@ class ReportController < ActionController::Base
       #There is a liquor name, only search for results containing 
       #this liquor name in mod1 mod2 and mod3
       #Lets query 
-      CoInitialize.call( 0 )
-      db = AccessDb.new(DBLOCATION)
-      db.open
-      
+      db = SQLite3::Database.new("db/flanders.sqlite3")
       # Query Here        
-      db.query("SELECT  OrderTransactions.OrderTransactionID, OrderTransactions.OrderID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
+      rows = db.execute("SELECT  OrderTransactions.OrderTransactionID, OrderTransactions.OrderID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
          EmployeeFiles.FirstName, EmployeeFiles.LastName,
         (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod1ID = MenuModifiers.MenuModifierID),
         (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod2ID = MenuModifiers.MenuModifierID),
@@ -205,7 +182,7 @@ class ReportController < ActionController::Base
         AND OrderHeaders.OrderDateTime > #"+params[:start_date].to_s+"#
         AND OrderHeaders.OrderDateTime <= #"+params[:end_date].to_s+"#;")
 
-      @liquor_sales = db.data
+      @liquor_sales = rows
       @liquor_sales.sort!
       @liquor_type = params[:liquor_type]
       @liquor_name = params[:liquor_name]

@@ -59,13 +59,11 @@ class Report < ActiveRecord::Base
 
   def self.overtime_to_csv(date, jobTitleId)
     #Lets query! 
-    CoInitialize.call( 0 )
-    db = AccessDb.new(DBLOCATION)
-    db.open
+    db = SQLite3::Database.new("db/flanders.sqlite3")
 
     #Get all of the SSNS for the Employees that have the selected JOBTITLE      
-    db.query("SELECT SocialSecurityNumber FROM EmployeeFiles WHERE JobTitleID = "+jobTitleId+";")
-    @ssns = db.data
+    rows = db.query("SELECT SocialSecurityNumber FROM EmployeeFiles WHERE JobTitleID = "+jobTitleId+";")
+    @ssns = rows
 
     #structure the last string to be attached to the query
     employee_ot_query = ""
@@ -79,13 +77,13 @@ class Report < ActiveRecord::Base
     end 
     
     # Query Here
-    db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, EmployeeTimeCards.WorkDate, EmployeeTimeCards.TotalWeeklyOverTimeMinutes
+    rows = db.execute("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, EmployeeTimeCards.WorkDate, EmployeeTimeCards.TotalWeeklyOverTimeMinutes
       FROM (EmployeeFiles INNER JOIN JobTitles ON EmployeeFiles.JobTitleID = JobTitles.JobTitleID) 
       INNER JOIN EmployeeTimeCards ON EmployeeFiles.EmployeeID = EmployeeTimeCards.EmployeeID 
       WHERE EmployeeTimeCards.WorkDate > #"+date+"#
       AND EmployeeTimeCards.TotalWeeklyOverTimeMinutes > 0 AND "+employee_ot_query+";")
     
-    @overtime_data = db.data
+    @overtime_data = rows
     @overtime_data.sort!
     
     data = CSV.generate(:force_quotes => true) do |row|
@@ -104,13 +102,11 @@ class Report < ActiveRecord::Base
   
   def self.total_hours_to_csv(date, jobTitleId)
     #Lets query! 
-    CoInitialize.call( 0 )
-    db = AccessDb.new(DBLOCATION)
-    db.open
+    db = SQLite3::Database.new("db/flanders.sqlite3")
 
     #Get all of the SSNS for the Employees that have the selected JOBTITLE      
-    db.query("SELECT SocialSecurityNumber FROM EmployeeFiles WHERE JobTitleID = "+jobTitleId+";")
-    @ssns = db.data
+    rows = db.execute("SELECT SocialSecurityNumber FROM EmployeeFiles WHERE JobTitleID = "+jobTitleId+";")
+    @ssns = rows
 
     #structure the last string to be attached to the query
     employee_ot_query = ""
@@ -124,14 +120,14 @@ class Report < ActiveRecord::Base
     end 
     
     # Query Here
-    db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, EmployeeTimeCards.WorkDate, 
+    rows = db.execute("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, EmployeeTimeCards.WorkDate, 
       EmployeeTimeCards.TotalWeeklyOverTimeMinutes, EmployeeTimeCards.TotalRegularMinutes, EmployeeTimeCards.TotalWorkMinutes
       FROM (EmployeeFiles INNER JOIN JobTitles ON EmployeeFiles.JobTitleID = JobTitles.JobTitleID) 
       INNER JOIN EmployeeTimeCards ON EmployeeFiles.EmployeeID = EmployeeTimeCards.EmployeeID 
       WHERE "+employee_ot_query+";")
       
     
-    @overtime_data = db.data
+    @overtime_data = rows
     @overtime_data.sort!
     
     data = CSV.generate(:force_quotes => true) do |row|
@@ -154,12 +150,10 @@ class Report < ActiveRecord::Base
 
 
   def self.liquor_sales_to_csv(start_date, end_date, liquor_type)
-    CoInitialize.call( 0 )
-    db = AccessDb.new(DBLOCATION)
-    db.open
+    db = SQLite3::Database.new("db/flanders.sqlite3")
     
     #Query HERE
-    db.query("SELECT  OrderTransactions.OrderTransactionID, OrderTransactions.OrderID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
+    rows = db.execute("SELECT  OrderTransactions.OrderTransactionID, OrderTransactions.OrderID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
        EmployeeFiles.FirstName, EmployeeFiles.LastName,
       (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod1ID = MenuModifiers.MenuModifierID),
       (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod2ID = MenuModifiers.MenuModifierID),
@@ -171,7 +165,7 @@ class Report < ActiveRecord::Base
       AND OrderHeaders.OrderDateTime > #"+start_date+"#
       AND OrderHeaders.OrderDateTime <= #"+end_date+"#;")
        
-    @liquor_sales = db.data
+    @liquor_sales = rows
     @liquor_sales.sort!
     
     data = CSV.generate(:force_quotes => true) do |row|
@@ -190,12 +184,10 @@ class Report < ActiveRecord::Base
   end 
 
   def self.liquor_sales_name_to_csv(start_date, end_date, liquor_type, liquor_name)
-    CoInitialize.call( 0 )
-    db = AccessDb.new(DBLOCATION)
-    db.open
-    
+    db = SQLite3::Database.new("db/flanders.sqlite3")
+
     #Query HERE
-    db.query("SELECT  OrderTransactions.OrderTransactionID, OrderTransactions.OrderID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
+    rows = db.execute("SELECT  OrderTransactions.OrderTransactionID, OrderTransactions.OrderID, MenuItems.MenuItemText, OrderHeaders.OrderDateTime,
        EmployeeFiles.FirstName, EmployeeFiles.LastName, 
       (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod1ID = MenuModifiers.MenuModifierID),
       (SELECT MenuModifiers.MenuModifierText FROM MenuModifiers WHERE OrderTransactions.Mod2ID = MenuModifiers.MenuModifierID),
@@ -207,7 +199,7 @@ class Report < ActiveRecord::Base
       AND OrderHeaders.OrderDateTime > #"+start_date+"#
       AND OrderHeaders.OrderDateTime <= #"+end_date+"#;")
        
-    @liquor_sales = db.data
+    @liquor_sales = rows
     @liquor_sales.sort!
     
     @liquor_sales_data = Array.new
