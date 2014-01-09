@@ -1,23 +1,13 @@
+require 'sqlite3'
 class ReportController < ActionController::Base
-  # Need these things to interact with .mdb files 
-  # https://gist.github.com/407804 this post fixed a big bug with 1.9.2 and win32ole
-  # Pretty huge
-  
-  
-  require 'win32ole'
-  require 'Win32API' 
-  CoInitialize = Win32API.new('ole32', 'CoInitialize', 'P', 'L')
-
   # For Employee Report
   def all_employees
-    CoInitialize.call( 0 )
-    db = AccessDb.new(DBLOCATION)
-    db.open
+    db = SQLite3::Database.new("db/flanders.sqlite3")
     
     # Query the DB here
-    db.query("SELECT FirstName, LastName, JobTitleText, SocialSecurityNumber FROM EmployeeFiles, JobTitles WHERE EmployeeFiles.JobTitleID = JobTitles.JobTitleID;")
-    @field_names = db.fields
-    @all_employees = db.data
+    columns, *rows = db.execute2("SELECT FirstName, LastName, JobTitleText, SocialSecurityNumber FROM EmployeeFiles, JobTitles WHERE EmployeeFiles.JobTitleID = JobTitles.JobTitleID;")
+    @field_names = columns
+    @all_employees = rows
   end
 
   def export_all_employees

@@ -1,17 +1,11 @@
 class Report < ActiveRecord::Base
-  require 'Win32API'
-  require 'win32ole'
   require 'csv'
-  CoInitialize = Win32API.new('ole32', 'CoInitialize', 'P', 'L')
 
   def self.all_employee_to_csv()
-    CoInitialize.call( 0 )
-    db = AccessDb.new(DBLOCATION)
-    db.open
-    # Query the DB here
-    db.query("SELECT FirstName, LastName, JobTitleText, SocialSecurityNumber FROM EmployeeFiles, JobTitles WHERE EmployeeFiles.JobTitleID = JobTitles.JobTitleID;")
-    @field_names = db.fields
-    @all_employees = db.data
+    db = SQLite3::Database.new("db/flanders.sqlite3")
+    columns, *rows = db.execute("SELECT FirstName, LastName, JobTitleText, SocialSecurityNumber FROM EmployeeFiles, JobTitles WHERE EmployeeFiles.JobTitleID = JobTitles.JobTitleID;")
+    @field_names = columns
+    @all_employees = rows
     @all_employees.sort!
     
     data = CSV.generate(:force_quotes => true) do |row|
@@ -28,19 +22,17 @@ class Report < ActiveRecord::Base
 
   def self.payroll_data(date)
     #Lets query 
-    CoInitialize.call( 0 )
-    db = AccessDb.new(DBLOCATION)
-    db.open
-    db.query("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, 
-             EmployeeFiles.SocialSecurityNumber, EmployeePayrollHistory.PayRate,
-             EmployeePayrollHistory.RegularHours, EmployeePayrollHistory.OTPayRate, 
-             EmployeePayrollHistory.OverTimeHours, EmployeePayrollHistory.AdditionalPay, 
-             EmployeePayrollHistory.TotalTips, EmployeePayrollHistory.PayPeriodEndDate 
-             FROM ((EmployeePayrollHistory INNER JOIN EmployeeFiles ON  
-             EmployeePayrollHistory.EmployeeID = EmployeeFiles.EmployeeID ) INNER JOIN JobTitles 
-             ON  EmployeeFiles.JobTitleID = JobTitles.JobTitleID) 
-             WHERE PayPeriodEndDate = ##{date}#; ")
-    return db.data
+    db = SQLite3::Database.new("db/flanders.sqlite3")
+    rows = db.execute("SELECT EmployeeFiles.FirstName, EmployeeFiles.LastName, JobTitles.JobTitleText, 
+                       EmployeeFiles.SocialSecurityNumber, EmployeePayrollHistory.PayRate,
+                       EmployeePayrollHistory.RegularHours, EmployeePayrollHistory.OTPayRate, 
+                       EmployeePayrollHistory.OverTimeHours, EmployeePayrollHistory.AdditionalPay, 
+                       EmployeePayrollHistory.TotalTips, EmployeePayrollHistory.PayPeriodEndDate 
+                       FROM ((EmployeePayrollHistory INNER JOIN EmployeeFiles ON  
+                       EmployeePayrollHistory.EmployeeID = EmployeeFiles.EmployeeID ) INNER JOIN JobTitles 
+                       ON  EmployeeFiles.JobTitleID = JobTitles.JobTitleID) 
+                       WHERE PayPeriodEndDate = ##{date}#; ")
+    return rows
   end
 
   def self.payroll_to_csv(date)
